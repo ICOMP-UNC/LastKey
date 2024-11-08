@@ -14,7 +14,7 @@
 #include <libopencm3/stm32/timer.h>
 
 #define ADC_CHANNEL_WATER_SENSOR ADC_CHANNEL0
-#define UMBRAL_NIVEL_AGUA 2000  // Umbral para el nivel crítico del agua
+#define UMBRAL_NIVEL_AGUA 2048  // Umbral para el nivel crítico del agua
 #define RELOAD_COUNT 89999      // Valor de recarga para el contador de SysTick
 
 // Definir valores para frecuencia mínima y máxima
@@ -29,9 +29,11 @@ volatile uint32_t led_blink_delay = 2000; // 2 segundos por defecto
 
 // Variable global para la frecuencia del buzzer
 uint16_t frecuencia_pwm = FRECUENCIA_MINIMA;  // Comienza en 1.5 kHz
+uint16_t array[8] = {0};
+int indice=0;
+uint32_t suma = 0;
 
 char uart_buffer[50]; // Buffer para almacenar el mensaje de UART
-
 
 /**
  * @brief Inicializa el sistema: configura el reloj a 72 MHz, habilita los relojes
@@ -48,6 +50,9 @@ void systemInit(void) {
     rcc_periph_clock_enable(RCC_TIM3);      // Habilitar reloj para Timer3 (PWM)
 }
 
+/**
+ * @brief Configura los pines GPIO para el LED de estado, el buzzer (alarma) y la bomba de agua.
+ */
 void configurar_puertos(void) {
     // Configuración de GPIOC para el LED de estado o alarma
     gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO13);
@@ -70,7 +75,9 @@ void configurar_systick(void) {
     systick_counter_enable();
 }
 
-
+/**
+ * @brief Inicializa la UART1 con una velocidad de transmisión de 115200 bps.
+ */
 void configurar_uart(void) {
     gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);
 
@@ -82,7 +89,6 @@ void configurar_uart(void) {
     usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
     usart_enable(USART1);
 }
-
 
 /**
  * @brief Configura el ADC para leer el sensor de nivel de agua
@@ -115,6 +121,7 @@ void configurar_dma_uart(void) {
     
     usart_enable_tx_dma(USART1); // Habilita DMA para UART
 }
+
 /**
  * @brief Configura el Timer para generar una interrupción cada 5 segundos.
  */
@@ -128,23 +135,21 @@ void configurar_timer(void) {
     timer_enable_oc_output(TIM2, TIM_OC2);             // Habilita el Output Compare para el canal 1
     timer_enable_counter(TIM2);             // Activa el contador del Timer
     
-    // Configurar el prescaler y el periodo para el timer 3
+    // Configurar el prescaler y el periodo para el timer 3 (PWM)
     timer_set_prescaler(TIM3, 7200 - 1); // 72 MHz / 7200 = 10 kHz
-    timer_set_period(TIM3, 5000 - 1);   // 10 kHz / 5000 = 2 Hz (0.5 segundos)
-
-    timer_enable_irq(TIM3, TIM_DIER_UIE);   // Habilita la interrupción de actualización
-    timer_enable_counter(TIM3);             // Activa el contador del Timer
-    nvic_enable_irq(NVIC_TIM3_IRQ);         // Habilita la interrupción en el NVIC
-}
-
-/**
- * @brief Configura el PWM en el timer TIM3 para el buzzer.
- */
-void configurar_pwm(void) {
+    timer_set_period(TIM3, 10000 - 1);   // 10 kHz / 10000 = 1 kHz (PWM)
     timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
     timer_set_oc_mode(TIM3, TIM_OC1, TIM_OCM_PWM1);
-    timer_set_oc_value(TIM3, TIM_OC1, frecuencia_pwm);  // Valor inicial del PWM
     timer_enable_oc_output(TIM3, TIM_OC1);
+    timer_enable_irq(TIM3, TIM_DIER_UIE);   // Habilita la interrupción de actualización
+    nvic_enable_irq(NVIC_TIM3_IRQ);         // Habilita la interrupción en el NVIC
+
+    // Configurar el prescaler y el periodo para el timer 4 (interrupción cada 0.5 segundos)
+    timer_set_prescaler(TIM4, 7200 - 1); // 72 MHz / 7200 = 10 kHz
+    timer_set_period(TIM4, 5000 - 1);   // 10 kHz / 5000 = 2 Hz (0.5 segundos)
+
+    timer_enable_irq(TIM4, TIM_DIER_UIE);   // Habilita la interrupción de actualización
+    nvic_enable_irq(NVIC_TIM4_IRQ);         // Habilita la interrupción en el NVIC
 }
 
 /**
@@ -160,24 +165,17 @@ void uart_send_level_dma(uint32_t nivel) {
 
 // ------------------------------------ Funciones de interrupción ------------------------------------
 
-
-
 /**
- * @brief Interrupción del Timer3 (1 segundo).
+ * @brief Interrupción del Timer4 (1 segundo).
  * Incrementa la frecuencia del PWM si la alarma está activa.
  */
-void tim3_isr(void) {
-    if (timer_get_flag(TIM3, TIM_SR_UIF)) {
-        timer_clear_flag(TIM3, TIM_SR_UIF);
-
-        if (alarma_activa) {
-            frecuencia_pwm += INCREMENTO_FRECUENCIA;  // Incrementar la frecuencia cada segundo
-            if (frecuencia_pwm >= FRECUENCIA_MAXIMA) {  // Limitar la frecuencia a 2.5 kHz
-                frecuencia_pwm = FRECUENCIA_MAXIMA;
-            }
-            timer_set_oc_value(TIM3, TIM_OC1, frecuencia_pwm);  // Actualizar valor del PWM
-        }
+void tim4_isr(void) {
+    timer_clear_flag(TIM4, TIM_SR_UIF);
+    frecuencia_pwm += INCREMENTO_FRECUENCIA;  // Incrementar la frecuencia cada segundo
+    if (frecuencia_pwm >= FRECUENCIA_MAXIMA) {  // Limitar la frecuencia a 2.5 kHz
+        frecuencia_pwm = FRECUENCIA_MAXIMA;
     }
+    timer_set_oc_value(TIM3, TIM_OC1, frecuencia_pwm);  // Actualizar valor del PWM
 }
 
 /**
@@ -191,19 +189,32 @@ void tim3_isr(void) {
 void adc1_2_isr(void) {
     if (adc_eoc(ADC1)) {
         adc_clear_flag(ADC1, ADC_SR_EOC);       // Limpia la bandera del ADC
-        nivel_agua = adc_read_regular(ADC1);
-    
+        array[indice] = adc_read_regular(ADC1);
+        for(int j=0;j<8;j++){
+            suma += array[j];
+        }
+        nivel_agua = suma/8;
+        indice++;
+        if(indice>=8){
+            indice=0;
+        }
+        suma=0;
         if (nivel_agua > UMBRAL_NIVEL_AGUA) {
             alarma_activa = 1;
-            timer_set_oc_value(TIM3, TIM_OC1, 100); // Activa el PWM del buzzer (asumiendo 100% duty cycle)
-            gpio_set(GPIOB, GPIO15); // Activar bomba de agua
+            timer_enable_counter(TIM3);     // Activa el contador del Timer 3
+            timer_enable_counter(TIM4);     // Activa el contador del Timer 4
+            gpio_set(GPIOB, GPIO15);        // Activar bomba de agua
         } else {
             alarma_activa = 0;
-            timer_set_oc_value(TIM3, TIM_OC1, 0); // Desactiva el PWM del buzzer
-            gpio_clear(GPIOB, GPIO15); // Desactivar bomba de agua
+            timer_disable_counter(TIM3);        // Desctiva el contador del Timer 3
+            timer_disable_counter(TIM4);        // Desctiva el contador del Timer 4
+            timer_set_counter(TIM3, 0);         // Establece el contador del temporizador a 0
+            timer_set_counter(TIM4, 0);         // Establece el contador del temporizador a 0
+            frecuencia_pwm = FRECUENCIA_MINIMA; //Frecuencia vuelve a su valor minimo
+            gpio_clear(GPIOB, GPIO15);          // Desactivar bomba de agua
         }
     }
-    uart_send_level_dma(nivel_agua);   // Enviar nivel de agua por UART usando DMA
+    uart_send_level_dma(nivel_agua);    // Enviar nivel de agua por UART usando DMA
 }
 
 
@@ -235,6 +246,9 @@ void sys_tick_handler(void) {
 
 // ------------------------------------ Función principal ------------------------------------
 
+/**
+ * @brief Inicializa todo el hardware y entra en un bucle infinito.
+ */
 int main(void) {
     systemInit();
     configurar_puertos();
