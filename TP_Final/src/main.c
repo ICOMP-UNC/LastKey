@@ -91,7 +91,7 @@ void configurar_adc(void) {
     adc_power_off(ADC1);
     adc_disable_scan_mode(ADC1);
     adc_set_single_conversion_mode(ADC1);
-    adc_enable_external_trigger_regular(ADC1, ADC_CR2_EXTSEL_SWSTART);  
+    adc_enable_external_trigger_regular(ADC1, ADC_CR2_EXTSEL_TIM2_CC2);
     adc_set_sample_time(ADC1, ADC_CHANNEL_WATER_SENSOR, ADC_SMPR_SMP_28DOT5CYC);    
     adc_power_on(ADC1);
     adc_reset_calibration(ADC1);
@@ -123,10 +123,11 @@ void configurar_timer(void) {
     timer_set_prescaler(TIM2, 7200 - 1); // 72 MHz / 7200 = 10 kHz
     timer_set_period(TIM2, 20000 - 1);   // 10 kHz / 20000 = 0.5 Hz (2 segundos)
 
-    timer_enable_irq(TIM2, TIM_DIER_UIE);   // Habilita la interrupción de actualización
+    timer_set_oc_mode(TIM2, TIM_OC2, TIM_OCM_TOGGLE);  // Modo toggle (cambia de estado)
+    timer_set_oc_value(TIM2, TIM_OC2, 20000 - 1);      // Valor de comparación a 2 segundos
+    timer_enable_oc_output(TIM2, TIM_OC2);             // Habilita el Output Compare para el canal 1
     timer_enable_counter(TIM2);             // Activa el contador del Timer
-    nvic_enable_irq(NVIC_TIM2_IRQ);         // Habilita la interrupción en el NVIC
-
+    
     // Configurar el prescaler y el periodo para el timer 3
     timer_set_prescaler(TIM3, 7200 - 1); // 72 MHz / 7200 = 10 kHz
     timer_set_period(TIM3, 5000 - 1);   // 10 kHz / 5000 = 2 Hz (0.5 segundos)
@@ -159,17 +160,7 @@ void uart_send_level_dma(uint32_t nivel) {
 
 // ------------------------------------ Funciones de interrupción ------------------------------------
 
-/**
- * @brief Handler de interrupción del Timer 2.
- *
- * Limpia la bandera de interrupción del Timer 2 y inicia la conversión del ADC.
- */
-void tim2_isr(void) {
-    if (timer_get_flag(TIM2, TIM_SR_UIF)) {
-        timer_clear_flag(TIM2, TIM_SR_UIF);     // Limpiar la bandera de interrupción
-        adc_start_conversion_regular(ADC1);     // Inicia la conversión ADC
-    }
-}
+
 
 /**
  * @brief Interrupción del Timer3 (1 segundo).
