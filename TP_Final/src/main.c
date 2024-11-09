@@ -51,17 +51,23 @@ void systemInit(void) {
 }
 
 /**
- * @brief Configura los pines GPIO para el LED de estado, el buzzer (alarma) y la bomba de agua.
+ * @brief Configura los pines GPIO para el LED de estado, el buzzer (alarma), la bomba de agua, el UART y el sensor de nivel de agua.
  */
 void configurar_puertos(void) {
-    // Configuración de GPIOC para el LED de estado o alarma
+    // Configuración de GPIOC para el LED de estado (PC13)
     gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO13);
     
-    // Configuración de GPIOA para la alarma (buzzer)
-    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO1);
+    // Configuración de GPIOA para la alarma (buzzer) en PA1
+    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO1);
 
-    // Configurar el GPIO para la bomba de agua
-    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO15); 
+    // Configuración de GPIOB para la bomba de agua en PB15
+    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO15);
+
+    // Configuración de PA9 (TX) para UART1
+    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);  // UART TX (PA9)
+
+    // Configuración de PA0 para el sensor de nivel de agua (entrada ADC)
+    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO0);
 }
 
 
@@ -79,12 +85,10 @@ void configurar_systick(void) {
  * @brief Inicializa la UART1 con una velocidad de transmisión de 115200 bps.
  */
 void configurar_uart(void) {
-    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);
-
     usart_set_baudrate(USART1, 115200);
     usart_set_databits(USART1, 8);
     usart_set_stopbits(USART1, USART_STOPBITS_1);
-    usart_set_mode(USART1, USART_MODE_TX);
+    usart_set_mode(USART1, USART_MODE_TX);          // Solo transmisión en este caso
     usart_set_parity(USART1, USART_PARITY_NONE);
     usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
     usart_enable(USART1);
@@ -257,7 +261,6 @@ int main(void) {
     configurar_timer();
     configurar_adc();
     configurar_uart();
-    configurar_pwm();
 
     while (1) {
         // No hacer nada
