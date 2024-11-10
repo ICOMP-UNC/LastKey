@@ -21,6 +21,12 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y build-essential clang-format cmake
 
+    - name: Install Doxygen
+      run: sudo apt-get install doxygen
+    
+    - name: Generate Documentation
+      run: doxygen Doxyfile
+
     # 3. Compilar el proyecto
     - name: Build project
       run: |
