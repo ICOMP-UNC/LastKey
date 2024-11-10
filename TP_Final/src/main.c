@@ -28,7 +28,7 @@ volatile uint32_t contador_systick = 0;
 volatile uint32_t led_blink_delay = 2000; // 2 segundos por defecto
 
 // Variable global para la frecuencia del buzzer
-uint16_t frecuencia_pwm = FRECUENCIA_MINIMA;  // Comienza en 1.5 kHz
+uint16_t tim3_period = FRECUENCIA_MINIMA;  // Comienza en 1.5 kHz
 uint16_t array[8] = {0};
 int indice=0;
 uint32_t suma = 0;
@@ -164,16 +164,16 @@ void uart_send_level_dma(uint32_t nivel) {
 // ------------------------------------ Funciones de interrupción ------------------------------------
 
 /**
- * @brief Interrupción del Timer4 (1 segundo).
+ * @brief Interrupción del Timer3 (1 segundo).
  * Incrementa la frecuencia del PWM si la alarma está activa.
  */
 void tim3_isr(void) {
     timer_clear_flag(TIM3, TIM_SR_UIF);
-    frecuencia_pwm += INCREMENTO_FRECUENCIA;  // Incrementar la frecuencia cada segundo
-    if (frecuencia_pwm >= FRECUENCIA_MAXIMA) {  // Limitar la frecuencia a 2.5 kHz
-        frecuencia_pwm = FRECUENCIA_MAXIMA;
+    tim3_period += INCREMENTO_FRECUENCIA;  // Incrementar la frecuencia cada segundo
+    if (tim3_period >= FRECUENCIA_MAXIMA) {  // Limitar la frecuencia a 2.5 kHz
+        tim3_period = FRECUENCIA_MAXIMA;
     }
-    timer_set_period(TIM3, frecuencia_pwm);  // Actualizar valor del PWM
+    timer_set_period(TIM3, tim3_period);  // Actualizar valor del PWM
 }
 
 /**
@@ -205,8 +205,7 @@ void adc1_2_isr(void) {
             alarma_activa = 0;
             timer_disable_counter(TIM3);        // Desctiva el contador del Timer 3
             timer_set_counter(TIM3, 0);         // Establece el contador del temporizador a 0
-            timer_set_counter(TIM4, 0);         // Establece el contador del temporizador a 0
-            frecuencia_pwm = FRECUENCIA_MINIMA; //Frecuencia vuelve a su valor minimo
+            tim3_period = FRECUENCIA_MINIMA; //Frecuencia vuelve a su valor minimo
             gpio_clear(GPIOB, GPIO15);          // Desactivar bomba de agua
         }
     }
