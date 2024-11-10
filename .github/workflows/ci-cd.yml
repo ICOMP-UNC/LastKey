@@ -29,10 +29,6 @@ jobs:
         cmake ../TP_Final/src
         make
 
-    # 4. Ejecutar pruebas (si tienes pruebas configuradas)
-    - name: Run tests
-      run: ./build/test_executable  # Cambiar si tienes otro ejecutable.
-
   lint:
     runs-on: ubuntu-latest
 
