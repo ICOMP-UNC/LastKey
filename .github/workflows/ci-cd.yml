@@ -1,1 +1,51 @@
+name: CI/CD Pipeline
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Configurar el repositorio
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Instalar dependencias
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential clang-format
+
+    # 3. Compilar el proyecto
+    - name: Build project
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
+
+    # 4. Ejecutar pruebas (si tienes pruebas configuradas)
+    - name: Run tests
+      run: ./build/test_executable
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Configurar el repositorio
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Instalar clang-format
+    - name: Install clang-format
+      run: sudo apt-get update && sudo apt-get install -y clang-format
+
+    # 3. Verificar estilo de código con clang-format
+    - name: Check code style
+      run: |
+        clang-format --dry-run --Werror src/.c include/.h
