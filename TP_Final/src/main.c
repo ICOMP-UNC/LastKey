@@ -148,12 +148,6 @@ void configurar_timer(void) {
     timer_enable_irq(TIM3, TIM_DIER_UIE);   // Habilita la interrupción de actualización
     nvic_enable_irq(NVIC_TIM3_IRQ);         // Habilita la interrupción en el NVIC
 
-    // Configurar el prescaler y el periodo para el timer 4 
-    timer_set_prescaler(TIM4, 7200 - 1); // 72 MHz / 7200 = 10 kHz
-    timer_set_period(TIM4, 10000 - 1);   // 10 kHz / 5000 = 2 Hz (1 segundo)
-
-    timer_enable_irq(TIM4, TIM_DIER_UIE);   // Habilita la interrupción de actualización
-    nvic_enable_irq(NVIC_TIM4_IRQ);         // Habilita la interrupción en el NVIC
 }
 
 /**
@@ -173,8 +167,8 @@ void uart_send_level_dma(uint32_t nivel) {
  * @brief Interrupción del Timer4 (1 segundo).
  * Incrementa la frecuencia del PWM si la alarma está activa.
  */
-void tim4_isr(void) {
-    timer_clear_flag(TIM4, TIM_SR_UIF);
+void tim3_isr(void) {
+    timer_clear_flag(TIM3, TIM_SR_UIF);
     frecuencia_pwm += INCREMENTO_FRECUENCIA;  // Incrementar la frecuencia cada segundo
     if (frecuencia_pwm >= FRECUENCIA_MAXIMA) {  // Limitar la frecuencia a 2.5 kHz
         frecuencia_pwm = FRECUENCIA_MAXIMA;
