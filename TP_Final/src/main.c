@@ -18,8 +18,8 @@
 #define RELOAD_COUNT 89999      // Valor de recarga para el contador de SysTick
 
 // Definir valores para frecuencia mínima y máxima
-#define FRECUENCIA_MINIMA 1500  // 1.5 kHz
-#define FRECUENCIA_MAXIMA 2500  // 2.5 kHz
+#define FRECUENCIA_MINIMA 5000  // 0.5 seg
+#define FRECUENCIA_MAXIMA 10000  // 1 seg
 #define INCREMENTO_FRECUENCIA 100  // Incremento de 100 Hz por segundo
 
 volatile uint32_t nivel_agua = 0;
@@ -141,16 +141,16 @@ void configurar_timer(void) {
     
     // Configurar el prescaler y el periodo para el timer 3 (PWM)
     timer_set_prescaler(TIM3, 7200 - 1); // 72 MHz / 7200 = 10 kHz
-    timer_set_period(TIM3, 10000 - 1);   // 10 kHz / 10000 = 1 kHz (PWM)
+    timer_set_period(TIM3, 10000 - 1);   // 10 kHz / 10000 = 1 kHz (PWM) (1 segundo)
     timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
     timer_set_oc_mode(TIM3, TIM_OC1, TIM_OCM_PWM1);
     timer_enable_oc_output(TIM3, TIM_OC1);
     timer_enable_irq(TIM3, TIM_DIER_UIE);   // Habilita la interrupción de actualización
     nvic_enable_irq(NVIC_TIM3_IRQ);         // Habilita la interrupción en el NVIC
 
-    // Configurar el prescaler y el periodo para el timer 4 (interrupción cada 0.5 segundos)
+    // Configurar el prescaler y el periodo para el timer 4 
     timer_set_prescaler(TIM4, 7200 - 1); // 72 MHz / 7200 = 10 kHz
-    timer_set_period(TIM4, 5000 - 1);   // 10 kHz / 5000 = 2 Hz (0.5 segundos)
+    timer_set_period(TIM4, 10000 - 1);   // 10 kHz / 5000 = 2 Hz (1 segundo)
 
     timer_enable_irq(TIM4, TIM_DIER_UIE);   // Habilita la interrupción de actualización
     nvic_enable_irq(NVIC_TIM4_IRQ);         // Habilita la interrupción en el NVIC
@@ -179,7 +179,7 @@ void tim4_isr(void) {
     if (frecuencia_pwm >= FRECUENCIA_MAXIMA) {  // Limitar la frecuencia a 2.5 kHz
         frecuencia_pwm = FRECUENCIA_MAXIMA;
     }
-    timer_set_oc_value(TIM3, TIM_OC1, frecuencia_pwm);  // Actualizar valor del PWM
+    timer_set_period(TIM3, frecuencia_pwm);  // Actualizar valor del PWM
 }
 
 /**
