@@ -200,12 +200,10 @@ void adc1_2_isr(void) {
         if (nivel_agua > UMBRAL_NIVEL_AGUA) {
             alarma_activa = 1;
             timer_enable_counter(TIM3);     // Activa el contador del Timer 3
-            timer_enable_counter(TIM4);     // Activa el contador del Timer 4
             gpio_set(GPIOB, GPIO15);        // Activar bomba de agua
         } else {
             alarma_activa = 0;
             timer_disable_counter(TIM3);        // Desctiva el contador del Timer 3
-            timer_disable_counter(TIM4);        // Desctiva el contador del Timer 4
             timer_set_counter(TIM3, 0);         // Establece el contador del temporizador a 0
             timer_set_counter(TIM4, 0);         // Establece el contador del temporizador a 0
             frecuencia_pwm = FRECUENCIA_MINIMA; //Frecuencia vuelve a su valor minimo
