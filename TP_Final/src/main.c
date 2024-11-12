@@ -45,6 +45,9 @@ volatile uint32_t led_blink_delay = 2000; /**< Retardo para el parpadeo del LED 
  * @brief Variable global para la frecuencia del buzzer (alarma).
  */
 uint16_t tim3_period = FRECUENCIA_MINIMA;  /**< Periodo inicial del Timer3 para controlar la frecuencia del buzzer */
+uint32_t array[8];
+uint32_t indice=0;
+int suma=0;
 
 /**
  * @brief Buffer para almacenar mensajes que se enviarán por UART.
@@ -153,15 +156,14 @@ void configurar_timer(void) {
     timer_set_period(TIM2, 20000 - 1);   // 10 kHz / 20000 = 0.5 Hz (2 segundos)
     timer_set_oc_mode(TIM2, TIM_OC2, TIM_OCM_TOGGLE);  // Modo toggle (cambia de estado)
     timer_set_oc_value(TIM2, TIM_OC2, 20000 - 1);      // Valor de comparación a 2 segundos
-    timer_enable_oc_output(TIM2, TIM_OC2);             // Habilita el Output Compare para el canal 1
+    timer_enable_oc_output(TIM2, TIM_OC2);             // Habilita el Output Compare para el canal 2
     timer_enable_counter(TIM2);             // Activa el contador del Timer
     
     // Configurar el prescaler y el periodo para el timer 3 (PWM)
     timer_set_prescaler(TIM3, 7200 - 1); // 72 MHz / 7200 = 10 kHz
     timer_set_period(TIM3, 10000 - 1);   // 10 kHz / 10000 = 1 Hz (100% PWM)
-    timer_enable_pwm(TIM3); // Habilita el PWM en el timer 3
+    timer_enable_counter(TIM3); // Habilita el PWM en el timer 3
 }
-
 /**
  * @brief Envia el nivel de agua a través de UART usando DMA.
  *
