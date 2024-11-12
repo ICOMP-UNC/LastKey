@@ -27,14 +27,6 @@ jobs:
     - name: Generate Documentation
       run: doxygen Doxyfile
 
-    # 3. Compilar el proyecto
-    - name: Build project
-      run: |
-        mkdir build
-        cd build
-        cmake ../TP_Final/src
-        make
-
   lint:
     runs-on: ubuntu-latest
 
