@@ -9,7 +9,8 @@
  * 
  * @note Este código utiliza la librería libopencm3 para interactuar con el hardware de STM32.
  */
-
+#include <string.h>
+#include <stdio.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
@@ -53,7 +54,14 @@ int suma=0;
  * @brief Buffer para almacenar mensajes que se enviarán por UART.
  */
 char uart_buffer[50];
-
+void configurar_puertos(void);
+void configurar_systick(void);
+void configurar_uart(void);
+void configurar_adc(void);
+void systemInit(void);
+void configurar_dma_uart(void);
+void uart_send_level_dma(uint32_t nivel);
+void configurar_timer(void);
 /**
  * @brief Función que inicializa el sistema.
  * 
