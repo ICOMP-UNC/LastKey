@@ -19,6 +19,7 @@
 #include <libopencm3/stm32/adc.h>
 #include <libopencm3/stm32/dma.h>
 #include <libopencm3/stm32/timer.h>
+#include <libopencm3/stm32/common/adc_common_v1.h>
 
 #define ADC_CHANNEL_WATER_SENSOR ADC_CHANNEL0  /**< Canal del ADC para el sensor de nivel de agua */
 #define UMBRAL_NIVEL_AGUA 2048  /**< Umbral para el nivel crítico del agua */
@@ -69,7 +70,7 @@ void configurar_timer(void);
  * GPIO, USART1, ADC1, Timer2, DMA1, Timer3.
  */
 void systemInit(void) {
-    rcc_clock_setup_in_hse_8mhz_out_72mhz(); // Configura el reloj del sistema a 72 MHz
+    rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);// Configura el reloj del sistema a 72 MHz
     rcc_periph_clock_enable(RCC_GPIOC);     // Habilita el reloj para GPIOC (LED de estado)
     rcc_periph_clock_enable(RCC_GPIOA);     // Habilita el reloj para GPIOA (Alarma y UART)
     rcc_periph_clock_enable(RCC_USART1);    // Habilita el reloj para USART1
@@ -86,6 +87,7 @@ void systemInit(void) {
 void configurar_puertos(void) {
     // Configuración de GPIOC para el LED de estado (PC13)
     gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO13);
+    gpio_set(GPIOC, GPIO13);  // Pone el pin 13 de GPIOC en bajo
     
     // Configuración de GPIOA para la alarma (buzzer) en PA1
     gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO1);
@@ -120,7 +122,7 @@ void configurar_uart(void) {
     usart_set_mode(USART1, USART_MODE_TX);          // Solo transmisión en este caso
     usart_set_parity(USART1, USART_PARITY_NONE);
     usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
-    usart_enable(USART1);
+    usart_enable(USART1);                                                                                                                           
 }
 
 /**
@@ -134,7 +136,9 @@ void configurar_adc(void) {
     adc_set_sample_time(ADC1, ADC_CHANNEL_WATER_SENSOR, ADC_SMPR_SMP_28DOT5CYC);    
     adc_power_on(ADC1);
     adc_reset_calibration(ADC1);
-    adc_calibration(ADC1);
+    adc_calibrate(ADC1);
+    adc_enable_eoc_interrupt(ADC1);
+    nvic_enable_irq(NVIC_ADC1_2_IRQ);
 }
 
 /**
@@ -178,6 +182,7 @@ void configurar_timer(void) {
  * @param nivel Nivel de agua a enviar.
  */
 void uart_send_level_dma(uint32_t nivel) {
+    dma_disable_channel(DMA1, DMA_CHANNEL4);
     snprintf(uart_buffer, sizeof(uart_buffer), "Nivel de agua: %lu\r\n", nivel);
     dma_set_number_of_data(DMA1, DMA_CHANNEL4, strlen(uart_buffer));
     dma_enable_channel(DMA1, DMA_CHANNEL4);
@@ -224,7 +229,7 @@ void adc1_2_isr(void) {
         if (nivel_agua > UMBRAL_NIVEL_AGUA) {
             alarma_activa = 1;
             timer_enable_counter(TIM3); // Activa el contador del Timer 3
-            gpio_set(GPIOB, GPIO15);    // Activar bomba de agua
+            gpio_clear(GPIOB, GPIO15);    // Activar bomba de agua GPIO15
         } else {
             alarma_activa = 0;
             timer_disable_counter(TIM3); // Desctiva el contador del Timer 3
@@ -232,7 +237,7 @@ void adc1_2_isr(void) {
                               0); // Establece el contador del temporizador a 0
             tim3_period =
                 FRECUENCIA_MINIMA;     // Frecuencia vuelve a su valor minimo
-            gpio_clear(GPIOB, GPIO15); // Desactivar bomba de agua
+            gpio_set(GPIOB, GPIO15); // Desactivar bomba de agua GPIO15
         }
     }
     uart_send_level_dma(nivel_agua); // Enviar nivel de agua por UART usando DMA
@@ -275,13 +280,18 @@ int main(void) {
     systemInit();
     configurar_puertos();
     configurar_systick();
-    configurar_dma_uart();
     configurar_timer();
     configurar_adc();
     configurar_uart();
-
+    configurar_dma_uart();
+    int k=0;
+    ADC1_SR |= ADC_SR_EOC;
     while (1) {
         // No hacer nada
+        k++;
+        if(k==1000){
+            k=0;
+        }  
     }
 
     return 0;
