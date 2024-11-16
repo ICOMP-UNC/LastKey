@@ -65,7 +65,7 @@ jobs:
           # Append to DOX_CONF_FILE input source directories, if you have libs, add $(pwd)/lib
           {
               cat $DOX_CONF_FILE
-              echo "INPUT" = $(pwd)/src $(pwd)/include
+              echo "INPUT" = TP_Final/src TP_Final/include
           } > $DOX_CONF_FILE
   
           # Generate documentation
