@@ -50,7 +50,7 @@ A continuación se detallan los componentes implementados:
 
 ## Diagrama de Flujo:
 ![image](https://github.com/user-attachments/assets/c71f6a14-9be3-4130-a8ff-d4e19abba010)
-![image](https://github.com/user-attachments/assets/fcf01caf-7593-4f7d-8e1d-322e2c538585)
+![image](https://github.com/user-attachments/assets/75bb9de7-ba86-4472-89c4-210bcd201e9e)
 ![image](https://github.com/user-attachments/assets/4ac2a041-2e6c-4246-85ff-6325c36fa42a)
 ![image](https://github.com/user-attachments/assets/9020fdf5-82ed-4f22-97c8-d752fd37ad43)
 
