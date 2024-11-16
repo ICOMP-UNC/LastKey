@@ -62,8 +62,8 @@ jobs:
           # We only make check, not changes
           DOX_CONF_FILE=$(pwd)/Doxyfile
       
-          # Añadir las rutas correctas de los directorios src e include dentro de TP_Final
-          echo "INPUT = TP_Final/src/main.c" >> $DOX_CONF_FILE
+          # Añadir las rutas correctas de los directorios dentro de TP_Final
+          echo "INPUT = $(pwd)/TP_Final/src/main.c" >> $DOX_CONF_FILE
       
           # Generar la documentación
           sudo dot -c
