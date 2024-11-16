@@ -61,10 +61,6 @@ jobs:
         run: |
           sudo apt-get install -y doxygen
           
-      - name: "Verify directory structure"
-        run: |
-          ls -R /home/runner/work/LastKey/TP_Final/src
-          
       - name: "Run doxygen command"
         shell: bash
         run: |
@@ -72,7 +68,7 @@ jobs:
           DOX_CONF_FILE=$(pwd)/Doxyfile
       
           # Añadir las rutas correctas de los directorios dentro de TP_Final
-          echo "INPUT = $(pwd)/TP_Final/src/main.c" >> $DOX_CONF_FILE
+          echo "INPUT = TP_Final/src/main.c" >> $DOX_CONF_FILE
       
           # Generar la documentación
           sudo dot -c
