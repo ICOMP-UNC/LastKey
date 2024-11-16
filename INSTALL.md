@@ -6,17 +6,28 @@ Esta guía proporciona pasos detallados para compilar, instalar y ejecutar el fi
 
 ## Hardware
 Placa STM32F103C8T6
+
 ST-LINK V2 (Para la conexión de la placa con la PC)
+
 Sensor de nivel de agua
+
 Buzzer pasivo
+
 Bomba de agua
+
 LED en PC13
+
 Cables y fuentes de alimentación según el esquema de conexión
 
+
 ## Software
-Sistema Operativo: Windows 10 o superior.
 Visual Studio Code (con la extensión PlatformIO).
+
 STM32CubeMX (opcional, para generar configuraciones).
+
 ST-LINK Utility (para la detección y configuración del ST-LINK).
+
 OpenOCD (para la depuración).
+
 Drivers del ST-LINK (descargables desde la web de STMicroelectronics).
+
