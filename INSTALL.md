@@ -1,22 +1,22 @@
 # Guía de Instalación y Configuración
 
-Este documento proporciona una guía detallada para compilar, actualizar y ejecutar el firmware en una placa STM32 utilizando las herramientas necesarias.
+Esta guía proporciona pasos detallados para compilar, instalar y ejecutar el firmware en un sistema basado en el microcontrolador STM32F103C8T6, específicamente para un sistema de control de nivel de agua. La guía incluye instrucciones sobre herramientas necesarias, dependencias y la configuración del entorno de desarrollo en Windows.
 
 ## Requisitos previos
 
-### Dependencias necesarias:
+## Hardware
+Placa STM32F103C8T6
+ST-LINK V2 (Para la conexión de la placa con la PC)
+Sensor de nivel de agua
+Buzzer pasivo
+Bomba de agua
+LED en PC13
+Cables y fuentes de alimentación según el esquema de conexión
 
-1. **GNU Toolchain para ARM**: Necesitarás la herramienta de compilación para ARM, como `arm-none-eabi-gcc`, que incluye los compiladores y enlazadores para el microcontrolador STM32.
-   
-   - En sistemas basados en Linux, puedes instalarlo con:
-     ```bash
-     sudo apt-get install gcc-arm-none-eabi
-     ```
-
-2. **libopencm3**: Esta es la biblioteca de código abierto para manejar el hardware STM32, que ya estás utilizando en tu proyecto. Debes clonar el repositorio de `libopencm3` y compilarlo.
-
-   Para instalarlo:
-   ```bash
-   git clone https://github.com/libopencm3/libopencm3.git
-   cd libopencm3
-   make
+## Software
+Sistema Operativo: Windows 10 o superior.
+Visual Studio Code (con la extensión PlatformIO).
+STM32CubeMX (opcional, para generar configuraciones).
+ST-LINK Utility (para la detección y configuración del ST-LINK).
+OpenOCD (para la depuración).
+Drivers del ST-LINK (descargables desde la web de STMicroelectronics).
