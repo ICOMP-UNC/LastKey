@@ -4,7 +4,7 @@ Esta guía proporciona pasos detallados para compilar, instalar y ejecutar el fi
 
 ## Requisitos previos
 
-## Hardware
+# Hardware
 Placa STM32F103C8T6
 
 ST-LINK V2 (Para la conexión de la placa con la PC)
@@ -19,8 +19,7 @@ LED en PC13
 
 Cables y fuentes de alimentación según el esquema de conexión
 
-
-## Software
+# Software
 Visual Studio Code (con la extensión PlatformIO).
 
 ST-LINK Utility (para la detección y configuración del ST-LINK).
@@ -29,16 +28,34 @@ OpenOCD (para la depuración).
 
 ## Instalación y Configuración del Entorno de Desarrollo
 1. Instalar Visual Studio Code y PlatformIO: 
-Descarga e instala Visual Studio Code desde code.visualstudio.com.
-Abre Visual Studio Code y ve al Marketplace.
-Busca e instala la extensión PlatformIO.
+Descargar e instala Visual Studio Code.
+Abrir Visual Studio Code, buscar e instalra la extensión PlatformIO.
 
 3. Instalar ST-LINK Utility: 
-Descarga e instala ST-LINK Utility desde STMicroelectronics.
-Conecta el ST-LINK V2 al PC y verifica que sea detectado por la aplicación.
+Descargar e instalar ST-LINK Utility desde STMicroelectronics.
+Conectar el ST-LINK V2 al PC y verificar que sea detectado por la aplicación.
 
 4. Instalar y Configurar OpenOCD: 
-Instala OpenOCD como parte del entorno de PlatformIO.
-En PlatformIO, crea un nuevo proyecto:
-Selecciona la placa: STM32F103C8T6 (BluePill).
-Framework: STM32Cube o Arduino (según el código desarrollado).
+Instalar OpenOCD como parte del entorno de PlatformIO.
+En PlatformIO, crear un nuevo proyecto:
+Seleccionar la placa: STM32F103C8T6 (BluePill).
+Framework: libopencm3 (según el código desarrollado).
+
+## Compilación del Código
+1. Abrir Visual Studio Code y cargar el proyecto desde PlatformIO.
+
+2. Configurar dependencias en el archivo platformio.ini:
+
+[env:bluepill_f103c8]
+platform = ststm32
+board = bluepill_f103c8
+framework = stm32cube
+upload_protocol = stlink
+monitor_speed = 115200
+
+3. Compila el proyecto utilizando el comando: PlatformIO: Build
+
+## Instalación del Firmware en el Microcontrolador
+1. Conecta la placa STM32F103C8T6 al PC utilizando el ST-LINK V2.
+
+2. Desde PlatformIO, selecciona la opción: PlatformIO: Upload
