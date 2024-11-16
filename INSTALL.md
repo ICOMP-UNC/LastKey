@@ -23,11 +23,22 @@ Cables y fuentes de alimentación según el esquema de conexión
 ## Software
 Visual Studio Code (con la extensión PlatformIO).
 
-STM32CubeMX (opcional, para generar configuraciones).
-
 ST-LINK Utility (para la detección y configuración del ST-LINK).
 
 OpenOCD (para la depuración).
 
-Drivers del ST-LINK (descargables desde la web de STMicroelectronics).
+## Instalación y Configuración del Entorno de Desarrollo
+1. Instalar Visual Studio Code y PlatformIO: 
+Descarga e instala Visual Studio Code desde code.visualstudio.com.
+Abre Visual Studio Code y ve al Marketplace.
+Busca e instala la extensión PlatformIO.
 
+3. Instalar ST-LINK Utility: 
+Descarga e instala ST-LINK Utility desde STMicroelectronics.
+Conecta el ST-LINK V2 al PC y verifica que sea detectado por la aplicación.
+
+4. Instalar y Configurar OpenOCD: 
+Instala OpenOCD como parte del entorno de PlatformIO.
+En PlatformIO, crea un nuevo proyecto:
+Selecciona la placa: STM32F103C8T6 (BluePill).
+Framework: STM32Cube o Arduino (según el código desarrollado).
