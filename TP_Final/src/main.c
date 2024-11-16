@@ -22,7 +22,7 @@
 #include <libopencm3/stm32/common/adc_common_v1.h>
 
 #define ADC_CHANNEL_WATER_SENSOR ADC_CHANNEL0  /**< Canal del ADC para el sensor de nivel de agua */
-#define UMBRAL_NIVEL_AGUA 2048  /**< Umbral para el nivel crítico del agua */
+#define UMBRAL_NIVEL_AGUA  1300 /**< Umbral para el nivel crítico del agua */
 #define RELOAD_COUNT 89999      /**< Valor de recarga para el contador de SysTick */
 
 /**
@@ -31,9 +31,9 @@
  * Se usa para controlar la frecuencia de parpadeo de la alarma y la frecuencia
  * del PWM del buzzer.
  */
-#define FRECUENCIA_MINIMA 5000  /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
-#define FRECUENCIA_MAXIMA 10000 /**< Frecuencia máxima del PWM en Hz (1 seg) */
-#define INCREMENTO_FRECUENCIA 100  /**< Incremento de frecuencia en Hz por segundo */
+#define PERIODO_MINIMO 400  /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
+#define PERIODO_MAXIMO 600 /**< Frecuencia máxima del PWM en Hz (1 seg) */
+#define INCREMENTO_PERIODO 1  /**< Incremento de frecuencia en Hz por segundo */
 
 /** 
  * @brief Variables globales para controlar el nivel de agua y la alarma.
@@ -46,7 +46,7 @@ volatile uint32_t led_blink_delay = 2000; /**< Retardo para el parpadeo del LED 
 /** 
  * @brief Variable global para la frecuencia del buzzer (alarma).
  */
-uint16_t tim3_period = FRECUENCIA_MINIMA;  /**< Periodo inicial del Timer3 para controlar la frecuencia del buzzer */
+uint16_t tim3_period = PERIODO_MINIMO;  /**< Periodo inicial del Timer3 para controlar la frecuencia del buzzer */
 uint32_t array[8];
 uint32_t indice=0;
 int suma=0;
@@ -73,6 +73,7 @@ void systemInit(void) {
     rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);// Configura el reloj del sistema a 72 MHz
     rcc_periph_clock_enable(RCC_GPIOC);     // Habilita el reloj para GPIOC (LED de estado)
     rcc_periph_clock_enable(RCC_GPIOA);     // Habilita el reloj para GPIOA (Alarma y UART)
+    rcc_periph_clock_enable(RCC_GPIOB);
     rcc_periph_clock_enable(RCC_USART1);    // Habilita el reloj para USART1
     rcc_periph_clock_enable(RCC_ADC1);      // Habilita el reloj para ADC1
     rcc_periph_clock_enable(RCC_TIM2);      // Habilita el reloj para Timer2
@@ -93,13 +94,16 @@ void configurar_puertos(void) {
     gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO1);
 
     // Configuración de GPIOB para la bomba de agua en PB15
-    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO15);
+    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO12);
 
     // Configuración de PA9 (TX) para UART1
     gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);  // UART TX (PA9)
 
     // Configuración de PA0 para el sensor de nivel de agua (entrada ADC)
     gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO0);
+
+    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO0);
+
 }
 
 /**
@@ -116,14 +120,14 @@ void configurar_systick(void) {
  * @brief Inicializa la UART1 con una velocidad de transmisión de 115200 bps.
  */
 void configurar_uart(void) {
-    usart_set_baudrate(USART1, 115200);
+    usart_set_baudrate(USART1, 9600);
     usart_set_databits(USART1, 8);
     usart_set_stopbits(USART1, USART_STOPBITS_1);
     usart_set_mode(USART1, USART_MODE_TX);          // Solo transmisión en este caso
     usart_set_parity(USART1, USART_PARITY_NONE);
     usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
     usart_enable_tx_dma(USART1); // Habilita DMA para UART
-    usart_enable(USART1);                                                                                                                           
+    usart_enable(USART1);                                                                                                                          
 }
 
 /**
@@ -156,7 +160,6 @@ void configurar_dma_uart(void) {
     dma_set_memory_size(DMA1, DMA_CHANNEL4, DMA_CCR_MSIZE_8BIT);
     dma_set_priority(DMA1, DMA_CHANNEL4, DMA_CCR_PL_HIGH);
     dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
-  //  dma_disable_half_transfer_interrupt(DMA1, DMA_CHANNEL4);
     dma_enable_channel(DMA1, DMA_CHANNEL4);
     dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TCIF | DMA_HTIF | DMA_GIF | 	DMA_TEIF );
     nvic_enable_irq(NVIC_DMA1_CHANNEL4_IRQ);
@@ -177,9 +180,13 @@ void configurar_timer(void) {
     timer_enable_counter(TIM2);             // Activa el contador del Timer
     
     // Configurar el prescaler y el periodo para el timer 3 (PWM)
-    timer_set_prescaler(TIM3, 7200 - 1); // 72 MHz / 7200 = 10 kHz
-    timer_set_period(TIM3, 10000 - 1);   // 10 kHz / 10000 = 1 Hz (100% PWM)
-    timer_enable_counter(TIM3); // Habilita el PWM en el timer 3
+    timer_set_prescaler(TIM3, 72-1); // 72 MHz / 72 = 10000 kHz
+    timer_set_period(TIM3, PERIODO_MINIMO - 1);   // 1000 kHz / 600 = 1.6K Hz (100% PWM)
+    timer_set_oc_mode(TIM3, TIM_OC3, TIM_OCM_PWM1);
+    timer_enable_oc_output(TIM3, TIM_OC3);
+    timer_set_oc_value(TIM3, TIM_OC3, PERIODO_MINIMO/2 - 1);      // Valor de comparación a 2 segundos
+    timer_enable_irq(TIM3, TIM_DIER_UIE);
+    nvic_enable_irq(NVIC_TIM3_IRQ);
 }
 /**
  * @brief Envia el nivel de agua a través de UART usando DMA.
@@ -198,8 +205,6 @@ void uart_send_level_dma(uint32_t nivel) {
 
 void dma1_channel4_isr (void){
     dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TCIF | DMA_HTIF | DMA_GIF | 	DMA_TEIF );
-    //dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_HTIF); 
-    //dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_GIF); 
 }
 
 /**
@@ -208,12 +213,24 @@ void dma1_channel4_isr (void){
  */
 void tim3_isr(void) {
     timer_clear_flag(TIM3, TIM_SR_UIF);
-    tim3_period +=
-        INCREMENTO_FRECUENCIA; // Incrementar la frecuencia cada segundo
-    if (tim3_period >= FRECUENCIA_MAXIMA) { // Limitar la frecuencia a 2.5 kHz
-        tim3_period = FRECUENCIA_MAXIMA;
+    static uint16_t cont = 0;
+     static int16_t incremento = INCREMENTO_PERIODO;
+    cont++;
+     if (cont == 10) {
+        tim3_period += incremento;
+
+        // Cambiar dirección si se alcanza el límite
+        if (tim3_period >= PERIODO_MAXIMO || tim3_period <= PERIODO_MINIMO) {
+            incremento = -incremento; // Invertir dirección
+        }
+
+        // Actualizar periodo y ciclo de trabajo del PWM
+        timer_set_period(TIM3, tim3_period);
+        timer_set_oc_value(TIM3, TIM_OC3, tim3_period / 2 - 1);
+
+        // Reiniciar contador
+        cont = 0;
     }
-    timer_set_period(TIM3, tim3_period); // Actualizar valor del PWM
 }
 
 /**
@@ -227,28 +244,19 @@ void tim3_isr(void) {
 void adc1_2_isr(void) {
     if (adc_eoc(ADC1)) {
         adc_clear_flag(ADC1, ADC_SR_EOC); // Limpia la bandera del ADC
-        array[indice] = adc_read_regular(ADC1);
-        for (int j = 0; j < 8; j++) {
-            suma += array[j];
-        }
-        nivel_agua = suma / 8;
-        indice++;
-        if (indice >= 8) {
-            indice = 0;
-        }
-        suma = 0;
+        nivel_agua = adc_read_regular(ADC1);
         if (nivel_agua > UMBRAL_NIVEL_AGUA) {
             alarma_activa = 1;
             timer_enable_counter(TIM3); // Activa el contador del Timer 3
-            gpio_clear(GPIOB, GPIO15);    // Activar bomba de agua GPIO15
+            gpio_set(GPIOB, GPIO12);    // Activar bomba de agua GPIO15
         } else {
             alarma_activa = 0;
             timer_disable_counter(TIM3); // Desctiva el contador del Timer 3
             timer_set_counter(TIM3,
                               0); // Establece el contador del temporizador a 0
             tim3_period =
-                FRECUENCIA_MINIMA;     // Frecuencia vuelve a su valor minimo
-            gpio_set(GPIOB, GPIO15); // Desactivar bomba de agua GPIO15
+                PERIODO_MINIMO;     // Frecuencia vuelve a su valor minimo
+            gpio_clear(GPIOB, GPIO12); // Desactivar bomba de agua GPIO15
         }
     }
     uart_send_level_dma(nivel_agua); // Enviar nivel de agua por UART usando DMA
@@ -295,8 +303,6 @@ int main(void) {
     configurar_adc();
     configurar_uart();
     configurar_dma_uart();
-    int k=0;
-    ADC1_SR |= ADC_SR_EOC;
     while (1) {
         // No hacer nada
      __asm__("wfi");
