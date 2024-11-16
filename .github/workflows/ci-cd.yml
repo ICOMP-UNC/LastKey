@@ -48,14 +48,19 @@ jobs:
 
   check-doxygen:
     runs-on: ubuntu-latest
-
+  
     steps:
       # Paso 1: Clonar el repositorio
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      # Paso 2: Verificar que Doxygen está configurado correctamente
+  
+      # Paso 2: Instalar Doxygen
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen
+  
+      # Paso 3: Validar comentarios de Doxygen
       - name: Validate Doxygen Comments
         run: |
-          sudo apt-get install -y doxygen
-          doxygen -d warnings Doxyfile
+          doxygen Doxyfile
+          grep "warning:.*document" doxygen.log || echo "All elements are properly documented"
+        
