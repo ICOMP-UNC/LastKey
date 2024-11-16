@@ -52,11 +52,27 @@ platform = ststm32
 
 board = bluepill_f103c8
 
-framework = stm32cube
+framework = libopencm3
 
-upload_protocol = stlink
+; change microcontroller
 
-monitor_speed = 115200
+board_build.mcu = stm32f103c8t6
+
+; change MCU frequency
+
+board_build.f_cpu = 72000000L
+
+build_flags = 
+
+    -O0    ; Desactiva optimización
+    
+    -g     ; Incluye información de depuración
+
+extra_scripts = pre:unlock_flash.py
+
+; Configuración para el monitor serial
+monitor_speed = 9600
+monitor_port = COM4
 
 3. Compilar el proyecto utilizando el comando: PlatformIO: Build
 
