@@ -49,6 +49,10 @@ jobs:
   check-doxygen:
     runs-on: ubuntu-latest
     steps:
+      - name: "Set up Graphviz"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
       - name: "Run doxygen command"
         shell: bash
         run: |
