@@ -57,7 +57,14 @@ volatile uint32_t led_blink_delay =
  */
 uint16_t tim3_period = PERIODO_MINIMO; /**< Periodo inicial del Timer3 para
                                           controlar la frecuencia del buzzer */
+/**
+ * @brief Índice utilizado para contar iteraciones o elementos procesados.
+ */
 uint32_t indice = 0;
+
+/**
+ * @brief Acumulador para realizar sumas de valores enteros.
+ */
 int suma = 0;
 
 /**
@@ -329,7 +336,11 @@ void sys_tick_handler(void) {
 // ------------------------------------
 
 /**
- * @brief Inicializa todo el hardware y entra en un bucle infinito.
+ * @brief Punto de entrada principal del programa.
+ *
+ * Configura el sistema e inicia el bucle principal.
+ *
+ * @return int Código de retorno del sistema operativo.
  */
 int main(void) {
     systemInit();
