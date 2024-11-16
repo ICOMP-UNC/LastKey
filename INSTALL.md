@@ -1,22 +1,66 @@
 # Guía de Instalación y Configuración
 
-Este documento proporciona una guía detallada para compilar, actualizar y ejecutar el firmware en una placa STM32 utilizando las herramientas necesarias.
+Esta guía proporciona pasos detallados para compilar, instalar y ejecutar el firmware en un sistema basado en el microcontrolador STM32F103C8T6, específicamente para un sistema de control de nivel de agua. La guía incluye instrucciones sobre herramientas necesarias, dependencias y la configuración del entorno de desarrollo en Windows.
 
-## Requisitos previos
+# Requisitos previos
 
-### Dependencias necesarias:
+## Hardware
+Placa STM32F103C8T6
 
-1. **GNU Toolchain para ARM**: Necesitarás la herramienta de compilación para ARM, como `arm-none-eabi-gcc`, que incluye los compiladores y enlazadores para el microcontrolador STM32.
-   
-   - En sistemas basados en Linux, puedes instalarlo con:
-     ```bash
-     sudo apt-get install gcc-arm-none-eabi
-     ```
+ST-LINK V2 (Para la conexión de la placa con la PC)
 
-2. **libopencm3**: Esta es la biblioteca de código abierto para manejar el hardware STM32, que ya estás utilizando en tu proyecto. Debes clonar el repositorio de `libopencm3` y compilarlo.
+Sensor de nivel de agua
 
-   Para instalarlo:
-   ```bash
-   git clone https://github.com/libopencm3/libopencm3.git
-   cd libopencm3
-   make
+Buzzer pasivo
+
+Bomba de agua
+
+LED en PC13
+
+Cables y fuentes de alimentación según el esquema de conexión
+
+## Software
+Visual Studio Code (con la extensión PlatformIO).
+
+ST-LINK Utility (para la detección y configuración del ST-LINK).
+
+OpenOCD (para la depuración).
+
+# Instalación y Configuración del Entorno de Desarrollo
+1. Instalar Visual Studio Code y PlatformIO: 
+Descargar e instala Visual Studio Code.
+Abrir Visual Studio Code, buscar e instalra la extensión PlatformIO.
+
+3. Instalar ST-LINK Utility: 
+Descargar e instalar ST-LINK Utility desde STMicroelectronics.
+Conectar el ST-LINK V2 al PC y verificar que sea detectado por la aplicación.
+
+4. Instalar y Configurar OpenOCD: 
+Instalar OpenOCD como parte del entorno de PlatformIO.
+En PlatformIO, crear un nuevo proyecto:
+Seleccionar la placa: STM32F103C8T6 (BluePill).
+Framework: libopencm3 (según el código desarrollado).
+
+# Compilación del Código
+1. Abrir Visual Studio Code y cargar el proyecto desde PlatformIO.
+
+2. Configurar dependencias en el archivo platformio.ini:
+
+[env:bluepill_f103c8]
+
+platform = ststm32
+
+board = bluepill_f103c8
+
+framework = stm32cube
+
+upload_protocol = stlink
+
+monitor_speed = 115200
+
+3. Compilar el proyecto utilizando el comando: PlatformIO: Build
+
+# Instalación del Firmware en el Microcontrolador
+1. Conectar la placa STM32F103C8T6 al PC utilizando el ST-LINK V2.
+
+2. Desde PlatformIO, seleccionar la opción: PlatformIO: Upload
