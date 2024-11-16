@@ -194,10 +194,10 @@ void configurar_dma_uart(void) {
     dma_set_peripheral_size(DMA1, DMA_CHANNEL4, DMA_CCR_PSIZE_8BIT);
     dma_set_memory_size(DMA1, DMA_CHANNEL4, DMA_CCR_MSIZE_8BIT);
     dma_set_priority(DMA1, DMA_CHANNEL4, DMA_CCR_PL_HIGH);
-  //  dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
+    //  dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
     dma_enable_channel(DMA1, DMA_CHANNEL4);
-  //  dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4,
-//                            DMA_TCIF | DMA_HTIF | DMA_GIF | DMA_TEIF);
+    //  dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4,
+    //                            DMA_TCIF | DMA_HTIF | DMA_GIF | DMA_TEIF);
     nvic_enable_irq(NVIC_DMA1_CHANNEL4_IRQ);
 
     usart_enable_tx_dma(USART1); // Habilita DMA para UART
