@@ -24,7 +24,7 @@
 
 #define ADC_CHANNEL_WATER_SENSOR                                               \
     ADC_CHANNEL0 /**< Canal del ADC para el sensor de nivel de agua */
-#define UMBRAL_NIVEL_AGUA 1300 /**< Umbral para el nivel crítico del agua */
+#define UMBRAL_NIVEL_AGUA 1600 /**< Umbral para el nivel crítico del agua */
 #define RELOAD_COUNT                                                           \
     89999 /**< Valor de recarga para el contador de SysTick                    \
            */
@@ -57,7 +57,6 @@ volatile uint32_t led_blink_delay =
  */
 uint16_t tim3_period = PERIODO_MINIMO; /**< Periodo inicial del Timer3 para
                                           controlar la frecuencia del buzzer */
-uint32_t array[8];
 uint32_t indice = 0;
 int suma = 0;
 
@@ -188,10 +187,10 @@ void configurar_dma_uart(void) {
     dma_set_peripheral_size(DMA1, DMA_CHANNEL4, DMA_CCR_PSIZE_8BIT);
     dma_set_memory_size(DMA1, DMA_CHANNEL4, DMA_CCR_MSIZE_8BIT);
     dma_set_priority(DMA1, DMA_CHANNEL4, DMA_CCR_PL_HIGH);
-    dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
+  //  dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
     dma_enable_channel(DMA1, DMA_CHANNEL4);
-    dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4,
-                              DMA_TCIF | DMA_HTIF | DMA_GIF | DMA_TEIF);
+  //  dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4,
+//                            DMA_TCIF | DMA_HTIF | DMA_GIF | DMA_TEIF);
     nvic_enable_irq(NVIC_DMA1_CHANNEL4_IRQ);
 
     usart_enable_tx_dma(USART1); // Habilita DMA para UART
@@ -239,10 +238,11 @@ void uart_send_level_dma(uint32_t nivel) {
 // ------------------------------------ Funciones de interrupción
 // ------------------------------------
 
-void dma1_channel4_isr(void) {
+/*void dma1_channel4_isr(void) {
     dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4,
                               DMA_TCIF | DMA_HTIF | DMA_GIF | DMA_TEIF);
 }
+*/
 
 /**
  * @brief Interrupción del Timer3 (1 segundo).
