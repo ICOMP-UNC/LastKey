@@ -2,9 +2,9 @@
 
 Esta guía proporciona pasos detallados para compilar, instalar y ejecutar el firmware en un sistema basado en el microcontrolador STM32F103C8T6, específicamente para un sistema de control de nivel de agua. La guía incluye instrucciones sobre herramientas necesarias, dependencias y la configuración del entorno de desarrollo en Windows.
 
-## Requisitos previos
+# Requisitos previos
 
-# Hardware
+## Hardware
 Placa STM32F103C8T6
 
 ST-LINK V2 (Para la conexión de la placa con la PC)
@@ -19,14 +19,14 @@ LED en PC13
 
 Cables y fuentes de alimentación según el esquema de conexión
 
-# Software
+## Software
 Visual Studio Code (con la extensión PlatformIO).
 
 ST-LINK Utility (para la detección y configuración del ST-LINK).
 
 OpenOCD (para la depuración).
 
-## Instalación y Configuración del Entorno de Desarrollo
+# Instalación y Configuración del Entorno de Desarrollo
 1. Instalar Visual Studio Code y PlatformIO: 
 Descargar e instala Visual Studio Code.
 Abrir Visual Studio Code, buscar e instalra la extensión PlatformIO.
@@ -41,21 +41,26 @@ En PlatformIO, crear un nuevo proyecto:
 Seleccionar la placa: STM32F103C8T6 (BluePill).
 Framework: libopencm3 (según el código desarrollado).
 
-## Compilación del Código
+# Compilación del Código
 1. Abrir Visual Studio Code y cargar el proyecto desde PlatformIO.
 
 2. Configurar dependencias en el archivo platformio.ini:
 
 [env:bluepill_f103c8]
+
 platform = ststm32
+
 board = bluepill_f103c8
+
 framework = stm32cube
+
 upload_protocol = stlink
+
 monitor_speed = 115200
 
 3. Compila el proyecto utilizando el comando: PlatformIO: Build
 
-## Instalación del Firmware en el Microcontrolador
+# Instalación del Firmware en el Microcontrolador
 1. Conecta la placa STM32F103C8T6 al PC utilizando el ST-LINK V2.
 
 2. Desde PlatformIO, selecciona la opción: PlatformIO: Upload
