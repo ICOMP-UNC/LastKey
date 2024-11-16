@@ -58,9 +58,9 @@ upload_protocol = stlink
 
 monitor_speed = 115200
 
-3. Compila el proyecto utilizando el comando: PlatformIO: Build
+3. Compilar el proyecto utilizando el comando: PlatformIO: Build
 
 # Instalación del Firmware en el Microcontrolador
-1. Conecta la placa STM32F103C8T6 al PC utilizando el ST-LINK V2.
+1. Conectar la placa STM32F103C8T6 al PC utilizando el ST-LINK V2.
 
-2. Desde PlatformIO, selecciona la opción: PlatformIO: Upload
+2. Desde PlatformIO, seleccionar la opción: PlatformIO: Upload
