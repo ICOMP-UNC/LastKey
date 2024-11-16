@@ -46,19 +46,38 @@ Framework: libopencm3 (según el código desarrollado).
 
 2. Configurar dependencias en el archivo platformio.ini:
 
-[env:bluepill_f103c8]
-
-platform = ststm32
-
-board = bluepill_f103c8
-
-framework = stm32cube
-
-upload_protocol = stlink
-
-monitor_speed = 115200
-
-3. Compilar el proyecto utilizando el comando: PlatformIO: Build
+    ```ini
+    [env:bluepill_f103c8]
+    
+    platform = ststm32
+    
+    board = bluepill_f103c8
+    
+    framework = libopencm3
+    
+    ; change microcontroller
+    
+    board_build.mcu = stm32f103c8t6
+    
+    ; change MCU frequency
+    
+    board_build.f_cpu = 72000000L
+    
+    build_flags = 
+    
+        -O0    ; Desactiva optimización
+        
+        -g     ; Incluye información de depuración
+    
+    extra_scripts = pre:unlock_flash.py
+    
+    ; Configuración para el monitor serial
+    
+    monitor_speed = 9600
+    
+    monitor_port = COM4
+    ```
+4. Compilar el proyecto utilizando el comando: PlatformIO: Build
 
 # Instalación del Firmware en el Microcontrolador
 1. Conectar la placa STM32F103C8T6 al PC utilizando el ST-LINK V2.
