@@ -25,8 +25,9 @@
 #define ADC_CHANNEL_WATER_SENSOR                                               \
     ADC_CHANNEL0 /**< Canal del ADC para el sensor de nivel de agua */
 #define UMBRAL_NIVEL_AGUA 1300 /**< Umbral para el nivel crítico del agua */
-#define RELOAD_COUNT 89999 /**< Valor de recarga para el contador de SysTick   \
-                            */
+#define RELOAD_COUNT                                                           \
+    89999 /**< Valor de recarga para el contador de SysTick                    \
+           */
 
 /**
  * @brief Definición de las frecuencias mínimas y máximas para la alarma.
@@ -34,10 +35,11 @@
  * Se usa para controlar la frecuencia de parpadeo de la alarma y la frecuencia
  * del PWM del buzzer.
  */
-#define PERIODO_MINIMO 400   /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
-#define PERIODO_MAXIMO 600   /**< Frecuencia máxima del PWM en Hz (1 seg) */
-#define INCREMENTO_PERIODO 1 /**< Incremento de frecuencia en Hz por segundo   \
-                              */
+#define PERIODO_MINIMO 400 /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
+#define PERIODO_MAXIMO 600 /**< Frecuencia máxima del PWM en Hz (1 seg) */
+#define INCREMENTO_PERIODO                                                     \
+    1 /**< Incremento de frecuencia en Hz por segundo                          \
+       */
 
 /**
  * @brief Variables globales para controlar el nivel de agua y la alarma.
@@ -63,6 +65,10 @@ int suma = 0;
  * @brief Buffer para almacenar mensajes que se enviarán por UART.
  */
 char uart_buffer[50];
+
+/**
+ * @brief Creacion de funciones.
+ */
 void configurar_puertos(void);
 void configurar_systick(void);
 void configurar_uart(void);
@@ -71,6 +77,7 @@ void systemInit(void);
 void configurar_dma_uart(void);
 void uart_send_level_dma(uint32_t nivel);
 void configurar_timer(void);
+
 /**
  * @brief Función que inicializa el sistema.
  *
