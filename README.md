@@ -54,3 +54,7 @@ A continuación se detallan los componentes implementados:
 ![image](https://github.com/user-attachments/assets/4ac2a041-2e6c-4246-85ff-6325c36fa42a)
 ![image](https://github.com/user-attachments/assets/9020fdf5-82ed-4f22-97c8-d752fd37ad43)
 
+## Esquematico: 
+![image](https://github.com/user-attachments/assets/7912b256-3a19-4c0d-9c64-8fde71c62823)
+
+
