@@ -24,16 +24,16 @@
 
 #define ADC_CHANNEL_WATER_SENSOR ADC_CHANNEL0 /**< Canal del ADC para el sensor de nivel de agua */
 #define UMBRAL_NIVEL_AGUA 1600                /**< Umbral para el nivel crítico del agua */
-#define TRUE 1                /**< Valor para bucle infinito */
-#define FALSE 0                /**< Valor para falso */
-#define TEN 10                /**< Valor chequeo de contador */
-#define CHAR_50 50                /**< Valor para tamaño de caracteres */
-#define MITAD 2                /**< Valor para division */
-#define BAUDRATE 9600                /**< Valor para baudrate */
-#define DATABITS_UART 8                /**< Valor para databits del usart1 */
-#define PRESCALER_7200 7199                /**< Valor para prescaler timer 2 */
-#define PERIOD_20000 19999                /**< Valor para periodo timer 2 */
-#define PRESCALER_72 71                /**< Valor para prescaler timer 3 */
+#define TRUE 1                                /**< Valor para bucle infinito */
+#define FALSE 0                               /**< Valor para falso */
+#define TEN 10                                /**< Valor chequeo de contador */
+#define CHAR_50 50                            /**< Valor para tamaño de caracteres */
+#define MITAD 2                               /**< Valor para division */
+#define BAUDRATE 9600                         /**< Valor para baudrate */
+#define DATABITS_UART 8                       /**< Valor para databits del usart1 */
+#define PRESCALER_7200 7199                   /**< Valor para prescaler timer 2 */
+#define PERIOD_20000 19999                    /**< Valor para periodo timer 2 */
+#define PRESCALER_72 71                       /**< Valor para prescaler timer 3 */
 #define RELOAD_COUNT                                                                                                   \
     89999 /**< Valor de recarga para el contador de SysTick                                                            \
            */
@@ -44,11 +44,11 @@
  * Se usa para controlar la frecuencia de parpadeo de la alarma y la frecuencia
  * del PWM del buzzer.
  */
-#define PERIODO_MINIMO 399 /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
-#define PERIODO_MINIMODIV PERIODO_MINIMO/MITAD - FALSE /**< Frecuencia mínima para el oc value timer 3 */
-#define PERIODO_MAXIMO 600 /**< Frecuencia máxima del PWM en Hz (1 seg) */
-#define FREC_RAPIDA 500 /**< Frecuencia rapida para led de estado */
-#define FREC_LENTA 2000 /**< Frecuencia lenta para led de estado */
+#define PERIODO_MINIMO 399                               /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
+#define PERIODO_MINIMODIV PERIODO_MINIMO / MITAD - FALSE /**< Frecuencia mínima para el oc value timer 3 */
+#define PERIODO_MAXIMO 600                               /**< Frecuencia máxima del PWM en Hz (1 seg) */
+#define FREC_RAPIDA 500                                  /**< Frecuencia rapida para led de estado */
+#define FREC_LENTA 2000                                  /**< Frecuencia lenta para led de estado */
 #define INCREMENTO_PERIODO                                                                                             \
     1 /**< Incremento de frecuencia en Hz por segundo                                                                  \
        */
@@ -56,9 +56,9 @@
 /**
  * @brief Variables globales para controlar el nivel de agua y la alarma.
  */
-volatile uint32_t nivel_agua = 0;         /**< Nivel actual de agua */
-volatile uint8_t alarma_activa = 0;       /**< Estado de la alarma (1 si está activa) */
-volatile uint32_t contador_systick = 0;   /**< Contador para las interrupciones de SysTick */
+volatile uint32_t nivel_agua = 0;               /**< Nivel actual de agua */
+volatile uint8_t alarma_activa = 0;             /**< Estado de la alarma (1 si está activa) */
+volatile uint32_t contador_systick = 0;         /**< Contador para las interrupciones de SysTick */
 volatile uint32_t led_blink_delay = FREC_LENTA; /**< Retardo para el parpadeo del LED en milisegundos */
 
 /**
@@ -215,11 +215,11 @@ void configurar_timer(void)
 {
     // Configurar el prescaler y el periodo para el timer 2
     timer_set_prescaler(TIM2, PRESCALER_7200); // 72 MHz / 7200 = 10 kHz
-    timer_set_period(TIM2, PERIOD_20000);   // 10 kHz / 20000 = 0.5 Hz (2 segundos)
+    timer_set_period(TIM2, PERIOD_20000);      // 10 kHz / 20000 = 0.5 Hz (2 segundos)
     timer_set_oc_mode(TIM2, TIM_OC2,
                       TIM_OCM_TOGGLE); // Modo toggle (cambia de estado)
     timer_set_oc_value(TIM2, TIM_OC2,
-                       PERIOD_20000);         // Valor de comparación a 2 segundos
+                       PERIOD_20000);      // Valor de comparación a 2 segundos
     timer_enable_oc_output(TIM2, TIM_OC2); // Habilita el Output Compare para el canal 2
     timer_enable_counter(TIM2);            // Activa el contador del Timer
 
@@ -310,7 +310,7 @@ void adc1_2_isr(void)
             alarma_activa = FALSE;
             timer_disable_counter(TIM3); // Desctiva el contador del Timer 3
             timer_set_counter(TIM3,
-                              FALSE);         // Establece el contador del temporizador a 0
+                              FALSE);     // Establece el contador del temporizador a 0
             tim3_period = PERIODO_MINIMO; // Frecuencia vuelve a su valor minimo
             gpio_clear(GPIOB, GPIO12);    // Desactivar bomba de agua GPIO15
         }
@@ -345,7 +345,7 @@ void sys_tick_handler(void)
     if (contador_systick >= led_blink_delay)
     {
         gpio_toggle(GPIOC, GPIO13); // Cambia el estado del LED
-        contador_systick = FALSE;       // Reiniciar el contador
+        contador_systick = FALSE;   // Reiniciar el contador
     }
 }
 
