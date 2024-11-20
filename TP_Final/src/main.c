@@ -24,6 +24,16 @@
 
 #define ADC_CHANNEL_WATER_SENSOR ADC_CHANNEL0 /**< Canal del ADC para el sensor de nivel de agua */
 #define UMBRAL_NIVEL_AGUA 1600                /**< Umbral para el nivel crítico del agua */
+#define TRUE 1                /**< Valor para bucle infinito */
+#define FALSE 0                /**< Valor para falso */
+#define TEN 10                /**< Valor chequeo de contador */
+#define CHAR_50 50                /**< Valor para tamaño de caracteres */
+#define MITAD 2                /**< Valor para division */
+#define BAUDRATE 9600                /**< Valor para baudrate */
+#define DATABITS_UART 8                /**< Valor para databits del usart1 */
+#define PRESCALER_7200 7199                /**< Valor para prescaler timer 2 */
+#define PERIOD_20000 19999                /**< Valor para periodo timer 2 */
+#define PRESCALER_72 71                /**< Valor para prescaler timer 3 */
 #define RELOAD_COUNT                                                                                                   \
     89999 /**< Valor de recarga para el contador de SysTick                                                            \
            */
@@ -34,8 +44,11 @@
  * Se usa para controlar la frecuencia de parpadeo de la alarma y la frecuencia
  * del PWM del buzzer.
  */
-#define PERIODO_MINIMO 400 /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
+#define PERIODO_MINIMO 399 /**< Frecuencia mínima del PWM en Hz (0.5 seg) */
+#define PERIODO_MINIMODIV PERIODO_MINIMO/MITAD - FALSE /**< Frecuencia mínima para el oc value timer 3 */
 #define PERIODO_MAXIMO 600 /**< Frecuencia máxima del PWM en Hz (1 seg) */
+#define FREC_RAPIDA 500 /**< Frecuencia rapida para led de estado */
+#define FREC_LENTA 2000 /**< Frecuencia lenta para led de estado */
 #define INCREMENTO_PERIODO                                                                                             \
     1 /**< Incremento de frecuencia en Hz por segundo                                                                  \
        */
@@ -46,7 +59,7 @@
 volatile uint32_t nivel_agua = 0;         /**< Nivel actual de agua */
 volatile uint8_t alarma_activa = 0;       /**< Estado de la alarma (1 si está activa) */
 volatile uint32_t contador_systick = 0;   /**< Contador para las interrupciones de SysTick */
-volatile uint32_t led_blink_delay = 2000; /**< Retardo para el parpadeo del LED en milisegundos */
+volatile uint32_t led_blink_delay = FREC_LENTA; /**< Retardo para el parpadeo del LED en milisegundos */
 
 /**
  * @brief Variable global para la frecuencia del buzzer (alarma).
@@ -66,7 +79,7 @@ int suma = 0;
 /**
  * @brief Buffer para almacenar mensajes que se enviarán por UART.
  */
-char uart_buffer[50];
+char uart_buffer[CHAR_50];
 
 /**
  * @brief Creacion de funciones.
@@ -127,11 +140,11 @@ void configurar_puertos(void)
 }
 
 /**
- * @brief Configura el SysTick para que genere una interrupción cada 1 ms.
+ * @brief Configura el SysTick para que genere una interrupción cada 10 ms.
  */
 void configurar_systick(void)
 {
-    systick_set_reload(RELOAD_COUNT); // Interrupción cada 1 ms
+    systick_set_reload(RELOAD_COUNT); // Interrupción cada 10 ms
     systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
     systick_interrupt_enable();
     systick_counter_enable();
@@ -142,8 +155,8 @@ void configurar_systick(void)
  */
 void configurar_uart(void)
 {
-    usart_set_baudrate(USART1, 9600);
-    usart_set_databits(USART1, 8);
+    usart_set_baudrate(USART1, BAUDRATE);
+    usart_set_databits(USART1, DATABITS_UART);
     usart_set_stopbits(USART1, USART_STOPBITS_1);
     usart_set_mode(USART1, USART_MODE_TX); // Solo transmisión en este caso
     usart_set_parity(USART1, USART_PARITY_NONE);
@@ -201,23 +214,23 @@ void configurar_dma_uart(void)
 void configurar_timer(void)
 {
     // Configurar el prescaler y el periodo para el timer 2
-    timer_set_prescaler(TIM2, 7200 - 1); // 72 MHz / 7200 = 10 kHz
-    timer_set_period(TIM2, 20000 - 1);   // 10 kHz / 20000 = 0.5 Hz (2 segundos)
+    timer_set_prescaler(TIM2, PRESCALER_7200); // 72 MHz / 7200 = 10 kHz
+    timer_set_period(TIM2, PERIOD_20000);   // 10 kHz / 20000 = 0.5 Hz (2 segundos)
     timer_set_oc_mode(TIM2, TIM_OC2,
                       TIM_OCM_TOGGLE); // Modo toggle (cambia de estado)
     timer_set_oc_value(TIM2, TIM_OC2,
-                       20000 - 1);         // Valor de comparación a 2 segundos
+                       PERIOD_20000);         // Valor de comparación a 2 segundos
     timer_enable_oc_output(TIM2, TIM_OC2); // Habilita el Output Compare para el canal 2
     timer_enable_counter(TIM2);            // Activa el contador del Timer
 
     // Configurar el prescaler y el periodo para el timer 3 (PWM)
-    timer_set_prescaler(TIM3, 72 - 1); // 72 MHz / 72 = 10000 kHz
+    timer_set_prescaler(TIM3, PRESCALER_72); // 72 MHz / 72 = 10000 kHz
     timer_set_period(TIM3,
-                     PERIODO_MINIMO - 1); // 1000 kHz / 600 = 1.6K Hz (100% PWM)
+                     PERIODO_MINIMO); // 1000 kHz / 600 = 1.6K Hz (100% PWM)
     timer_set_oc_mode(TIM3, TIM_OC3, TIM_OCM_PWM1);
     timer_enable_oc_output(TIM3, TIM_OC3);
     timer_set_oc_value(TIM3, TIM_OC3,
-                       PERIODO_MINIMO / 2 - 1); // Valor de comparación a 2 segundos
+                       PERIODO_MINIMODIV); // Valor de comparación a 2 segundos
     timer_enable_irq(TIM3, TIM_DIER_UIE);
     nvic_enable_irq(NVIC_TIM3_IRQ);
 }
@@ -250,10 +263,10 @@ void uart_send_level_dma(uint32_t nivel)
 void tim3_isr(void)
 {
     timer_clear_flag(TIM3, TIM_SR_UIF);
-    static uint16_t cont = 0;
+    static uint16_t cont = FALSE;
     static int16_t incremento = INCREMENTO_PERIODO;
     cont++;
-    if (cont == 10)
+    if (cont == TEN)
     {
         tim3_period += incremento;
 
@@ -265,10 +278,10 @@ void tim3_isr(void)
 
         // Actualizar periodo y ciclo de trabajo del PWM
         timer_set_period(TIM3, tim3_period);
-        timer_set_oc_value(TIM3, TIM_OC3, tim3_period / 2 - 1);
+        timer_set_oc_value(TIM3, TIM_OC3, tim3_period / MITAD - FALSE);
 
         // Reiniciar contador
-        cont = 0;
+        cont = FALSE;
     }
 }
 
@@ -288,16 +301,16 @@ void adc1_2_isr(void)
         nivel_agua = adc_read_regular(ADC1);
         if (nivel_agua > UMBRAL_NIVEL_AGUA)
         {
-            alarma_activa = 1;
+            alarma_activa = TRUE;
             timer_enable_counter(TIM3); // Activa el contador del Timer 3
             gpio_set(GPIOB, GPIO12);    // Activar bomba de agua GPIO15
         }
         else
         {
-            alarma_activa = 0;
+            alarma_activa = FALSE;
             timer_disable_counter(TIM3); // Desctiva el contador del Timer 3
             timer_set_counter(TIM3,
-                              0);         // Establece el contador del temporizador a 0
+                              FALSE);         // Establece el contador del temporizador a 0
             tim3_period = PERIODO_MINIMO; // Frecuencia vuelve a su valor minimo
             gpio_clear(GPIOB, GPIO12);    // Desactivar bomba de agua GPIO15
         }
@@ -321,18 +334,18 @@ void sys_tick_handler(void)
     // Ajustar la frecuencia de parpadeo en función del estado de la alarma
     if (alarma_activa)
     {
-        led_blink_delay = 500; // Parpadeo rápido (0.5s) si la alarma está activa
+        led_blink_delay = FREC_RAPIDA; // Parpadeo rápido (0.5s) si la alarma está activa
     }
     else
     {
-        led_blink_delay = 2000; // Parpadeo lento (2s) si no hay alarma
+        led_blink_delay = FREC_LENTA; // Parpadeo lento (2s) si no hay alarma
     }
 
     // Control del parpadeo del LED de estado
     if (contador_systick >= led_blink_delay)
     {
         gpio_toggle(GPIOC, GPIO13); // Cambia el estado del LED
-        contador_systick = 0;       // Reiniciar el contador
+        contador_systick = FALSE;       // Reiniciar el contador
     }
 }
 
@@ -355,7 +368,7 @@ int main(void)
     configurar_adc();
     configurar_uart();
     configurar_dma_uart();
-    while (1)
+    while (TRUE)
     {
         // No hacer nada
         __asm__("wfi");
